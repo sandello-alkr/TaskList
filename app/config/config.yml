@@ -75,10 +75,14 @@ doctrine_migrations:
 nelmio_api_doc: ~
 
 fos_rest:
-    routing_loader:
-        default_format: json                            # All responses should be JSON formated
-        include_format: false                           # We do not include format in request, so that all responses
-                                                        # will eventually be JSON formated
+    param_fetcher_listener: true
+    body_listener: true
+    format_listener:
+        enabled: true
+        rules:
+            - { path: '^/', priorities: ['json', 'xml'], fallback_format: 'html' }
+    view:
+        view_response_listener: 'force'
 
 fos_user:
     db_driver: orm
@@ -96,4 +100,9 @@ fos_oauth_server:
     service:
         user_provider: fos_user.user_manager             # This property will be used when valid credentials are given to load the user upon access token creation
 
-
+sensio_framework_extra:
+    request:
+        converters: true
+        auto_convert: false
+    view:
+        annotations: false

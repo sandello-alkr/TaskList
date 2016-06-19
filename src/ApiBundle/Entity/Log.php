@@ -99,11 +99,24 @@ class Log
     }
 
     /**
+     * Set user
+     *
+     * @param \ApiBundle\Entity\User $user
+     * @return Log
+     */
+    public function setUser(\ApiBundle\Entity\User $user = null)
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
      * Get user
      *
-     * @return integer
+     * @return \ApiBundle\Entity\User 
      */
-    public function getUserId()
+    public function getUser()
     {
         return $this->user;
     }

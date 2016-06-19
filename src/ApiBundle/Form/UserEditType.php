@@ -10,14 +10,13 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
-class UserType extends AbstractType
+class UserEditType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        //added all field for edit
         $builder
-            ->add('username', TextType::class, array("required" => true))
-            ->add('plain_password', PasswordType::class, array("required" => true))
-            ->add('email', EmailType::class, array("required" => true));
+            ->add('plain_password');
     }
 
     /**

@@ -69,11 +69,24 @@ class TaskList
     }
 
     /**
+     * Set creator
+     *
+     * @param \ApiBundle\Entity\User $creator
+     * @return TaskList
+     */
+    public function setCreator(\ApiBundle\Entity\User $creator = null)
+    {
+        $this->creator = $creator;
+
+        return $this;
+    }
+
+    /**
      * Get creator
      *
-     * @return integer
+     * @return \ApiBundle\Entity\User 
      */
-    public function getCreatorId()
+    public function getCreator()
     {
         return $this->creator;
     }

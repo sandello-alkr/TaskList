@@ -76,14 +76,67 @@ class Groups
     {
         return $this->name;
     }
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->users = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Set creator
+     *
+     * @param \ApiBundle\Entity\User $creator
+     * @return Groups
+     */
+    public function setCreator(\ApiBundle\Entity\User $creator = null)
+    {
+        $this->creator = $creator;
+
+        return $this;
+    }
 
     /**
      * Get creator
      *
-     * @return integer
+     * @return \ApiBundle\Entity\User 
      */
-    public function getCreatorId()
+    public function getCreator()
     {
         return $this->creator;
+    }
+
+    /**
+     * Add users
+     *
+     * @param \ApiBundle\Entity\User $users
+     * @return Groups
+     */
+    public function addUser(\ApiBundle\Entity\User $users)
+    {
+        $this->users[] = $users;
+
+        return $this;
+    }
+
+    /**
+     * Remove users
+     *
+     * @param \ApiBundle\Entity\User $users
+     */
+    public function removeUser(\ApiBundle\Entity\User $users)
+    {
+        $this->users->removeElement($users);
+    }
+
+    /**
+     * Get users
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getUsers()
+    {
+        return $this->users;
     }
 }
