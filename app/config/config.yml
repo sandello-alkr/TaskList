@@ -22,6 +22,7 @@ framework:
     #serializer:      { enable_annotations: true }
     templating:
         engines: ['twig']
+        #assets_version: SomeVersionScheme
     default_locale:  "%locale%"
     trusted_hosts:   ~
     trusted_proxies: ~
@@ -30,6 +31,8 @@ framework:
         handler_id:  ~
     fragments:       ~
     http_method_override: true
+    serializer:
+        enabled: true
 
 # Twig Configuration
 twig:
@@ -66,19 +69,19 @@ swiftmailer:
     password:  "%mailer_password%"
     spool:     { type: memory }
 
-doctrine_migrations:
-    dir_name: "%kernel.root_dir%/DoctrineMigrations"
-    namespace: Application\Migrations
-    table_name: migration_versions
-    name: Application Migrations
-
+# app/config/config.yml
 nelmio_api_doc: ~
 
 fos_rest:
+    view:
+        view_response_listener: 'force'
+               
     routing_loader:
-        default_format: json                            # All responses should be JSON formated
-        include_format: false                           # We do not include format in request, so that all responses
-                                                        # will eventually be JSON formated
+        default_format: json
+    format_listener:
+        rules:
+            - { path: '^/', priorities: ['json', 'xml'], fallback_format: json, prefer_extension: true }
+            - { path: '^/', priorities: [ 'text/html', '*/*'], fallback_format: html, prefer_extension: true }   
 
 fos_user:
     db_driver: orm
@@ -96,4 +99,8 @@ fos_oauth_server:
     service:
         user_provider: fos_user.user_manager             # This property will be used when valid credentials are given to load the user upon access token creation
 
-
+doctrine_migrations:
+    dir_name: "%kernel.root_dir%/DoctrineMigrations"
+    namespace: Application\Migrations
+    table_name: migration_versions
+    name: Application Migrations

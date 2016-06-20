@@ -1,9 +1,6 @@
 <?php
-
 namespace ApiBundle\Entity;
-
 use Doctrine\ORM\Mapping as ORM;
-
 /**
  * Log
  *
@@ -20,28 +17,23 @@ class Log
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
-
     /**
      * @ORM\ManyToOne(targetEntity="User")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      */
     private $user;
-
     /**
      * @var int
      *
      * @ORM\Column(name="logType", type="integer")
      */
     private $logType;
-
     /**
      * @var string
      *
      * @ORM\Column(name="description", type="string", length=255)
      */
     private $description;
-
-
     /**
      * Get id
      *
@@ -51,7 +43,6 @@ class Log
     {
         return $this->id;
     }
-
     /**
      * Set logType
      *
@@ -61,10 +52,8 @@ class Log
     public function setLogType($logType)
     {
         $this->logType = $logType;
-
         return $this;
     }
-
     /**
      * Get logType
      *
@@ -74,7 +63,6 @@ class Log
     {
         return $this->logType;
     }
-
     /**
      * Set description
      *
@@ -84,10 +72,8 @@ class Log
     public function setDescription($description)
     {
         $this->description = $description;
-
         return $this;
     }
-
     /**
      * Get description
      *
@@ -97,13 +83,23 @@ class Log
     {
         return $this->description;
     }
-
+    /**
+     * Set user
+     *
+     * @param \ApiBundle\Entity\User $user
+     * @return Log
+     */
+    public function setUser(\ApiBundle\Entity\User $user = null)
+    {
+        $this->user = $user;
+        return $this;
+    }
     /**
      * Get user
      *
-     * @return integer
+     * @return \ApiBundle\Entity\User 
      */
-    public function getUserId()
+    public function getUser()
     {
         return $this->user;
     }

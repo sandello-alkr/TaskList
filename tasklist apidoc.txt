@@ -1,0 +1,68 @@
+﻿TaskListController
+
+GET /tasklists 
+Просмотр всех tasklists, доступных пользователю.
+
+Response: [
+  {
+    "id": {id},
+    "name": {name}
+  },
+]
+
+CODE: 200(OK)
+------------------------------------------------
+GET /tasklists/{id}/
+Просмотр одного tasklist со всеми tasks.
+
+Response:
+{
+  "id": {id},
+  "name": {name}
+  "tasks":{tasks[]}
+}
+
+CODE: 200(OK), 404(Not found), 403(forbidden)
+------------------------------------------------
+POST /tasklists
+Создание нового tasklist.
+
+Request: 
+{
+    "name": {name},
+  } (values for new object)
+
+Response:
+{
+  "id": {id},
+  "name": {name}
+}   (new object)
+
+CODE: 201(created)
+-----------------------------------------------
+PUT /tasklists/{id}
+Обновление существующего tasklist.
+
+Request:
+{
+  "id": {id},
+  "name": {name}
+} (object for update with new values)
+
+Response: 
+{
+  "id": {id},
+  "name": {name}
+} (updated object)
+
+CODE: 200(OK), 404(not found), 403(forbidden)
+----------------------------------------------
+DELETE /tasklists/{id}
+Удаление существующего tasklist.
+
+Request:- 
+
+Response: -
+
+CODE: 204(No content - empty successful response for delete), 404(not found), 403(forbidden)
+--------------------------------------------------------------------------------------------

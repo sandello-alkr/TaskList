@@ -22,12 +22,6 @@ class TaskList
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="User")
-     * @ORM\JoinColumn(name="creator_id", referencedColumnName="id")
-     */
-    private $creator;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="name", type="string", length=255)
@@ -68,13 +62,4 @@ class TaskList
         return $this->name;
     }
 
-    /**
-     * Get creator
-     *
-     * @return integer
-     */
-    public function getCreatorId()
-    {
-        return $this->creator;
-    }
 }

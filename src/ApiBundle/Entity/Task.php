@@ -1,9 +1,6 @@
 <?php
-
 namespace ApiBundle\Entity;
-
 use Doctrine\ORM\Mapping as ORM;
-
 /**
  * Task
  *
@@ -20,35 +17,29 @@ class Task
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
-
     /**
      * @ORM\ManyToOne(targetEntity="TaskList")
      * @ORM\JoinColumn(name="task_list_id", referencedColumnName="id")
      */
     private $task_list;
-
     /**
      * @var string
      *
      * @ORM\Column(name="name", type="string", length=255)
      */
     private $name;
-
     /**
      * @var string
      *
      * @ORM\Column(name="description", type="string", length=255)
      */
     private $description;
-
     /**
      * @var bool
      *
      * @ORM\Column(name="status", type="boolean")
      */
     private $status;
-
-
     /**
      * Get id
      *
@@ -58,7 +49,6 @@ class Task
     {
         return $this->id;
     }
-
     /**
      * Set name
      *
@@ -68,10 +58,8 @@ class Task
     public function setName($name)
     {
         $this->name = $name;
-
         return $this;
     }
-
     /**
      * Get name
      *
@@ -81,7 +69,6 @@ class Task
     {
         return $this->name;
     }
-
     /**
      * Set description
      *
@@ -91,10 +78,8 @@ class Task
     public function setDescription($description)
     {
         $this->description = $description;
-
         return $this;
     }
-
     /**
      * Get description
      *
@@ -104,7 +89,6 @@ class Task
     {
         return $this->description;
     }
-
     /**
      * Set status
      *
@@ -114,10 +98,8 @@ class Task
     public function setStatus($status)
     {
         $this->status = $status;
-
         return $this;
     }
-
     /**
      * Get status
      *
@@ -127,13 +109,23 @@ class Task
     {
         return $this->status;
     }
-
+    /**
+     * Set task_list
+     *
+     * @param \ApiBundle\Entity\TaskList $taskList
+     * @return Task
+     */
+    public function setTaskList(\ApiBundle\Entity\TaskList $taskList = null)
+    {
+        $this->task_list = $taskList;
+        return $this;
+    }
     /**
      * Get task_list
      *
-     * @return integer
+     * @return \ApiBundle\Entity\TaskList 
      */
-    public function getTaskListId()
+    public function getTaskList()
     {
         return $this->task_list;
     }
