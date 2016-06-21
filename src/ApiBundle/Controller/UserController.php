@@ -11,6 +11,12 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
+use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
+use Doctrine\Common\Annotations\AnnotationReader;
+use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 
 use ApiBundle\Entity\User;
 use ApiBundle\Form\UserType;
@@ -23,87 +29,64 @@ class UserController extends FOSRestController
 {
     /**
      * User registration.
-     * @Route("/reg", name="user_reg")
+     * @Route("/create", name="user_create")
      * @Method("POST")
+     * @ApiDoc(
+     *  description="Create a new User",
+     *  section="User",
+     *  statusCodes = {
+     *     Response::HTTP_CREATED = "Returned when user created",
+     *     Response::HTTP_BAD_REQUEST = "Returned when the form has errors",
+     *     Response::HTTP_CONFLICT = "Returned when user with the same username or email exists"
+     *   },
+     *  input={
+     *      "class"="ApiBundle\Form\UserType",
+     *  }
+     * )
      */
-    public function regAction(Request $request)
+    public function postCreateAction(Request $request)
     {
         $user = new User();
         $errors = $this->treatAndValidateRequest($user, $request);
         if (count($errors) > 0)
             return new View(
                 $errors,
-                Response::HTTP_UNPROCESSABLE_ENTITY
-            );
-
-        if (empty($user->getUsername()) || empty($user->getEmail()) || empty($user->getPlainPassword()))
-            return new View(
-                ["error" => "fill all fields: username, email and plain_password"],
-                Response::HTTP_UNPROCESSABLE_ENTITY
+                Response::HTTP_BAD_REQUEST
             );
 
         $userManager = $this->get("fos_user.user_manager");
-        if (!empty($userManager->findUserByUsername($user->getUsername())) ||
-            !empty($userManager->findUserByEmail($user->getEmail())))
-            return View::create(
-                ["error" => "user with the same username or email exists"],
-                Response::HTTP_UNPROCESSABLE_ENTITY
-            );
-
         $user->setEnabled(true);
         $user->setRoles(['ROLE_USER']);
-        $userManager->updateUser($user);
 
-        return View::create(
-            ["message" => "user created"],
-            Response::HTTP_CREATED
-        );
-    }
+        try {
+            $userManager->updateUser($user);
 
-    /**
-     * Client get.
-     * @Route("/client", name="user_client")
-     * @Method("GET")
-     */
-    public function clientAction()
-    {
-        $clientManager = $this->get('fos_oauth_server.client_manager.default');
-        $client = $clientManager->createClient();
-        $client->setAllowedGrantTypes(['password']);
-        $clientManager->updateClient($client);
-
-        return View::create(
-            [
-                "client_id" => $client->getPublicId(),
-                "client_secret" => $client->getSecret(),
-                "grant_type" => $client->getAllowedGrantTypes()[0]
-            ],
-            Response::HTTP_OK
-        );
-    }
-
-    /**
-     * User get.
-     * @Route("/{id}", name="user_get")
-     * @Method("GET")
-     * @ParamConverter("user", class="ApiBundle:User", options = {"mapping" : {"id" : "id"}})
-     */
-    public function getUserAction(User $user)
-    {
-        return View::create(
-            [
-                "id" => $user->getId(),
-                "username" => $user->getUsername(),
-                "email" => $user->getEmail()
-            ],
-            Response::HTTP_OK
-        );
+            return View::create(
+                ["message" => "user created"],
+                Response::HTTP_CREATED
+            );
+        } catch(\Exception $e){
+            return View::create(
+                ["error" => "user with the same username or email exists"],
+                Response::HTTP_CONFLICT
+            );
+        }
     }
 
     /**
      * Users get.
-     * @Route("s", name="users_get")
+     * @Route("/all", name="user_all")
      * @Method("GET")
+     * @ApiDoc(
+     *  description="Get All Users",
+     *  section="User",
+     *  statusCodes = {
+     *     Response::HTTP_OK = "Returned when users received",
+     *   },
+     *  output={
+     *      "class"="ApiBundle\Entity\User",
+     *  }
+     * )
      */
     public function getUsersAction()
     {
@@ -112,46 +95,140 @@ class UserController extends FOSRestController
             ->getRepository('ApiBundle:User')
             ->findAll();
 
-        $users_public_data = array();
-        foreach ($users as $user)
-            $users_public_data[] = [
-                "id" => $user->getId(),
-                "username" => $user->getUsername(),
-                "email" => $user->getEmail()
-            ];
+        return View::create(
+            $this->getSerializer($users, array("user_data")),
+            Response::HTTP_OK
+        );
+    }
+
+    /**
+     * Current user get.
+     * @Route("/view", name="user_view")
+     * @Method("GET")
+     * @ApiDoc(
+     *  description="Get current User",
+     *  section="User",
+     *  statusCodes = {
+     *     Response::HTTP_OK = "Returned when current user received",
+     *   },
+     *  output={
+     *      "class"="ApiBundle\Entity\User",
+     *  }
+     * )
+     */
+    public function getCurrentUserAction()
+    {
+        return View::create(
+            $this->getSerializer($this->getUser(), array("user_data")),
+            Response::HTTP_OK
+        );
+    }
+
+    /*
+     * Client get.
+     * @Route("/client", name="user_client")
+     * @Method("GET")
+     */
+    /*public function getClientAction()
+    {
+        $clientManager = $this->get('fos_oauth_server.client_manager.default');
+        $client = $clientManager->createClient();
+        $client->setAllowedGrantTypes(['password', 'refresh_token']);
+        $clientManager->updateClient($client);
 
         return View::create(
-            $users_public_data,
+            $this->getSerializer($client, array("client_data")),
+            Response::HTTP_OK
+        );
+    }*/
+
+    /**
+     * User get.
+     * @Route("/{id}", name="user_get")
+     * @Method("GET")
+     * @ParamConverter("user", class="ApiBundle:User", options = {"mapping" : {"id" : "id"}})
+     * @ApiDoc(
+     *  description="Get user on id",
+     *  section="User",
+     *  statusCodes = {
+     *     Response::HTTP_OK = "Returned when user received on id",
+     *   },
+     *  output={
+     *      "class"="ApiBundle\Entity\User",
+     *  }
+     * )
+     */
+    public function getUserAction(User $user)
+    {
+        return View::create(
+            $this->getSerializer($user, array("user_data")),
             Response::HTTP_OK
         );
     }
 
     /**
      * User edit.
-     * @Route("/edit_password", name="user_edit_password")
-     * @Method("PUT")
+     * @Route("/edit", name="user_edit")
+     * @Method("POST")
+     * @ApiDoc(
+     *  description="Edit Current User",
+     *  section="User",
+     *  statusCodes = {
+     *     Response::HTTP_OK = "Returned when user updated",
+     *     Response::HTTP_BAD_REQUEST = "Returned when the form has errors",
+     *     Response::HTTP_CONFLICT = "Returned when user with the same username or email exists"
+     *   },
+     *  input={
+     *      "class"="ApiBundle\Form\UserType",
+     *  }
+     * )
+     *
      */
-    public function editUserAction(Request $request)
+    public function postUserAction(Request $request)
     {
         $user = $this->getUser();
-        if (empty($request->get("new_password")))
+        $errors = $this->treatAndValidateRequest($user, $request);
+        if (count($errors) > 0)
             return new View(
-                ["error" => "new password empty"],
-                Response::HTTP_UNPROCESSABLE_ENTITY
+                $errors,
+                Response::HTTP_BAD_REQUEST
             );
 
-        $user->setPlainPassword($request->get("new_password"));
-        $user->setPassword($this
+        $encode_password = $this
             ->get('security.encoder_factory')
             ->getEncoder($user)
-            ->encodePassword($request->get("new_password"), $user->getSalt())
-        );
-        $this->persistAndFlush($user);
+            ->encodePassword($user->getPlainPassword(), $user->getSalt());
 
-        return View::create(
-            ["message" => "user password updated"],
-            Response::HTTP_OK
-        );
+        if (strcmp($encode_password, $user->getPassword()) != 0)
+            return View::create(
+                ["error" => "incorrect password"],
+                Response::HTTP_CONFLICT
+            );
+
+        $userManager = $this->get("fos_user.user_manager");
+
+        try {
+            $userManager->updateUser($user);
+
+            return View::create(
+                ["message" => "user updated"],
+                Response::HTTP_OK
+            );
+        } catch(\Exception $e){
+            return View::create(
+                ["error" => "user with the same username or email exists"],
+                Response::HTTP_CONFLICT
+            );
+        }
+    }
+
+    private function getSerializer($users, array $groups)
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
+        $normalizer = new ObjectNormalizer($classMetadataFactory);
+        $serializer = new Serializer(array($normalizer));
+
+        return $serializer->normalize($users, null, array('groups' => $groups));
     }
 
     private function treatAndValidateRequest(User $user, Request $request)
@@ -168,12 +245,5 @@ class UserController extends FOSRestController
         $errors = $this->get('validator')->validate($user);
 
         return $errors;
-    }
-
-    private function persistAndFlush(User $user)
-    {
-        $manager = $this->getDoctrine()->getManager();
-        $manager->persist($user);
-        $manager->flush();
     }
 }
