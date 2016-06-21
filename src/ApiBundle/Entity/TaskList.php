@@ -3,6 +3,8 @@
 namespace ApiBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as JMS;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * TaskList
@@ -22,12 +24,18 @@ class TaskList
     private $id;
 
     /**
+     * @ORM\OneToMany(targetEntity="Task", mappedBy="task_list", cascade={"persist", "remove"})
+     */
+    private $tasks;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="name", type="string", length=255)
+     * @Assert\NotBlank()
+     * @Assert\NotNull()
      */
     private $name;
-
 
     /**
      * Get id
@@ -60,6 +68,43 @@ class TaskList
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * Add task
+     *
+     * @param \ApiBundle\Entity\Task $task
+     */
+    public function addTask(\ApiBundle\Entity\Task $task)
+    {
+        $this->tasks[] = $task;
+        $task->setTaskList($this);
+        return $this;
+    }
+
+    /**
+     * Remove task
+     *
+     * @param \ApiBundle\Entity\Task $task
+     */
+    public function removeTask(\ApiBundle\Entity\Task $task)
+    {
+        $this->tasks->removeElement($task);
+    }
+     
+    /**
+     * Get tasks
+     *
+     * @return Doctrine\Common\Collections\Collection 
+     */
+    public function getTasks()
+    {
+        return $this->tasks;
+    }
+
+    public function __construct()
+    {
+        $this->tasks = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
 }

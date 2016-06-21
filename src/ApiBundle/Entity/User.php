@@ -38,4 +38,24 @@ class User extends BaseUser
     {
         return $this->id;
     }
+
+    /**
+     * @ORM\OneToMany(targetEntity="Priority", mappedBy="user", cascade={"persist", "remove"})
+     */
+    private $priorities;
+     
+    /**
+     * Get priorities
+     *
+     * @return Doctrine\Common\Collections\Collection 
+     */
+    public function getPriorities()
+    {
+        return $this->priorities;
+    }
+
+    public function __construct()
+    {
+        $this->priorities = new \Doctrine\Common\Collections\ArrayCollection();
+    }
 }

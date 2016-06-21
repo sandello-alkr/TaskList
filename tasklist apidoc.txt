@@ -7,6 +7,7 @@ Response: [
   {
     "id": {id},
     "name": {name}
+    "tasks":{tasks[]}
   },
 ]
 

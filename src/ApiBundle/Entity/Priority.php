@@ -9,6 +9,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Priority
 {
+    const CREATOR_PRIORITY = 1;
+
     /**
      * @var int
      *

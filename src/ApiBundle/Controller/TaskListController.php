@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 use ApiBundle\Entity\TaskList;
+use ApiBundle\Entity\Priority;
 use ApiBundle\Form\TaskListType;
 
 class TaskListController extends FOSRestController
@@ -16,26 +17,33 @@ class TaskListController extends FOSRestController
 
     public function getTasklistAction($id)
     {
-        //+ tasks[]
         $taskList = $this
-            ->getDoctrine()
-            ->getRepository('ApiBundle:TaskList')
-            ->find($id);
+                    ->getDoctrine()
+                    ->getRepository('ApiBundle:TaskList')
+                    ->find($id);
 
         if(!$taskList){
             return new View(
                 "page not found",
                 Response::HTTP_NOT_FOUND);
-        }
-        return $taskList;
+            }
+        
+        if($this->checkAccess($taskList)){
+            return $taskList;
+        } 
+        return "permission denied";
     }
 
     public function getTasklistsAction()
     {
-        //all accessable tasklists must be here
-        /*
+        $user = $this->get('security.context')->getToken()->getUser();
+        $priorities = $user->getPriorities();
+        $taskLists = array();
+        foreach ($priorities as $priority) {
+            $taskLists[] = $priority->getTaskList();            
+        }
 
-        return $taskLists;*/
+        return $taskLists;
     }
 
     public function postTasklistsAction(Request $request)
@@ -48,8 +56,8 @@ class TaskListController extends FOSRestController
                 Response::HTTP_UNPROCESSABLE_ENTITY
             );
         }
-
         $this->persistAndFlush($taskList);
+        $this->addPriority($taskList);
 
         return new View($taskList, Response::HTTP_CREATED);
     }
@@ -64,23 +72,32 @@ class TaskListController extends FOSRestController
             );
         }
 
-        $this->persistAndFlush($taskList);
-
-        return $taskList;
+        if($this->checkAccess($taskList, Priority::CREATOR_PRIORITY)){
+            $this->persistAndFlush($taskList); 
+            return $taskList;  
+        }
+        return "permission denied";        
     }
 
     public function deleteTasklistAction($id)
     {
+        //while without delete cascade
         $taskList = $this
             ->getDoctrine()
             ->getRepository('ApiBundle:TaskList')
             ->find($id);
-
-        $em = $this->getDoctrine()->getManager();
-        $em->remove($taskList);
-        $em->flush();
-
-        return;
+        if(!$taskList){
+            return new View(
+                "page not found",
+                Response::HTTP_NOT_FOUND);
+            }
+        if($this->checkAccess($taskList, Priority::CREATOR_PRIORITY)){
+            $em = $this->getDoctrine()->getManager();
+            $em->remove($taskList);
+            $em->flush();
+            return;
+        }
+        return "permission denied";
     }
 
     private function treatAndValidateRequest(TaskList $taskList, Request $request)
@@ -103,6 +120,33 @@ class TaskListController extends FOSRestController
         $manager = $this->getDoctrine()->getManager();
         $manager->persist($taskList);
         $manager->flush();
+    }
+
+    private function checkAccess(TaskList $taskList, $priority = null)
+    {
+        $user = $this->get('security.context')->getToken()->getUser();
+        if($priority == null){
+            $query = array('user' => $user, 'task_list' => $taskList);
+        } else {
+            $query = array('user' => $user, 'priority' => $priority, 'task_list' => $taskList);
+        }
+
+        return $result = $this
+            ->getDoctrine()
+            ->getRepository('ApiBundle:Priority')
+            ->findBy($query);
+    }
+
+    private function addPriority(TaskList $taskList)
+    {
+        $priority = new Priority();
+        $priority->setUser($this->get('security.context')->getToken()->getUser());
+        $priority->setTaskList($taskList);
+        $priority->setPriority(1);
+        $manager = $this->getDoctrine()->getManager();
+        $manager->persist($priority);
+        $manager->flush();
+        return;
     }
 
 }
