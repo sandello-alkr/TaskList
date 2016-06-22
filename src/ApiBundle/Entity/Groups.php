@@ -1,9 +1,6 @@
 <?php
-
 namespace ApiBundle\Entity;
-
 use Doctrine\ORM\Mapping as ORM;
-
 /**
  * Groups
  *
@@ -20,13 +17,11 @@ class Groups
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
-
     /**
      * @ORM\ManyToOne(targetEntity="User")
      * @ORM\JoinColumn(name="creator_id", referencedColumnName="id")
      */
     private $creator;
-
     /**
      * @ORM\ManyToMany(targetEntity="User")
      * @ORM\JoinTable(name="groups_users",
@@ -35,15 +30,12 @@ class Groups
      *      )
      */
     private $users;
-
     /**
      * @var string
      *
      * @ORM\Column(name="name", type="string", length=255)
      */
     private $name;
-
-
     /**
      * Get id
      *
@@ -53,7 +45,6 @@ class Groups
     {
         return $this->id;
     }
-
     /**
      * Set name
      *
@@ -63,10 +54,8 @@ class Groups
     public function setName($name)
     {
         $this->name = $name;
-
         return $this;
     }
-
     /**
      * Get name
      *
@@ -93,7 +82,6 @@ class Groups
     public function setCreator(\ApiBundle\Entity\User $creator = null)
     {
         $this->creator = $creator;
-
         return $this;
     }
 
@@ -116,7 +104,6 @@ class Groups
     public function addUser(\ApiBundle\Entity\User $users)
     {
         $this->users[] = $users;
-
         return $this;
     }
 
@@ -139,4 +126,4 @@ class Groups
     {
         return $this->users;
     }
-}
+

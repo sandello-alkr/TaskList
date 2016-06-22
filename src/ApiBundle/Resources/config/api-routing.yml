@@ -1,0 +1,4 @@
+rest_api_tasklist:
+    type: rest
+    resource: "@ApiBundle/Controller/TaskListController.php"
+    name_prefix:  tasklist_

@@ -4,8 +4,13 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
+<<<<<<< HEAD
+    "hash": "2e833cd37b7ba98a64c966ae9ac02835",
+    "content-hash": "49300755512f3378aad4ca978772b5ec",
+=======
     "hash": "bfcafee012da039e26a85b5e4d1813f3",
     "content-hash": "1ffe430b5160b50ad96725dcd81a0a62",
+>>>>>>> origin/master
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -3570,6 +3575,18 @@
     "packages-dev": [
         {
             "name": "doctrine/data-fixtures",
+<<<<<<< HEAD
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/doctrine/data-fixtures.git",
+                "reference": "1bd7eb8720cb600a9cf0a798698fbf4fa2bec9b8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/doctrine/data-fixtures/zipball/1bd7eb8720cb600a9cf0a798698fbf4fa2bec9b8",
+                "reference": "1bd7eb8720cb600a9cf0a798698fbf4fa2bec9b8",
+=======
             "version": "v1.2.1",
             "source": {
                 "type": "git",
@@ -3580,6 +3597,7 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/doctrine/data-fixtures/zipball/b3cae5efef97191a08d53d733260f7eb667c16e4",
                 "reference": "b3cae5efef97191a08d53d733260f7eb667c16e4",
+>>>>>>> origin/master
                 "shasum": ""
             },
             "require": {
@@ -3625,7 +3643,11 @@
             "keywords": [
                 "database"
             ],
+<<<<<<< HEAD
+            "time": "2016-06-19 09:43:21"
+=======
             "time": "2016-06-20 18:08:26"
+>>>>>>> origin/master
         },
         {
             "name": "doctrine/doctrine-fixtures-bundle",

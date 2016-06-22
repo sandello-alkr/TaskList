@@ -1,9 +1,6 @@
 <?php
-
 namespace ApiBundle\Entity;
-
 use Doctrine\ORM\Mapping as ORM;
-
 /**
  * Priority
  *
@@ -12,6 +9,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Priority
 {
+    const CREATOR_PRIORITY = 1;
+
     /**
      * @var int
      *
@@ -20,27 +19,22 @@ class Priority
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
-
     /**
      * @ORM\ManyToOne(targetEntity="User")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      */
     private $user;
-
     /**
      * @ORM\ManyToOne(targetEntity="TaskList")
      * @ORM\JoinColumn(name="task_list_id", referencedColumnName="id")
      */
     private $task_list;
-
     /**
      * @var int
      *
      * @ORM\Column(name="priority", type="integer")
      */
     private $priority;
-
-
     /**
      * Get id
      *
@@ -50,7 +44,6 @@ class Priority
     {
         return $this->id;
     }
-
     /**
      * Set priority
      *
@@ -60,10 +53,8 @@ class Priority
     public function setPriority($priority)
     {
         $this->priority = $priority;
-
         return $this;
     }
-
     /**
      * Get priority
      *
@@ -73,7 +64,17 @@ class Priority
     {
         return $this->priority;
     }
-
+    /**
+     * Set user
+     *
+     * @param \ApiBundle\Entity\User $user
+     * @return Priority
+     */
+    public function setUser(\ApiBundle\Entity\User $user = null)
+    {
+        $this->user = $user;
+        return $this;
+    }
     /**
      * Set user
      *
@@ -96,7 +97,17 @@ class Priority
     {
         return $this->user;
     }
-
+    /**
+     * Set task_list
+     *
+     * @param \ApiBundle\Entity\TaskList $taskList
+     * @return Priority
+     */
+    public function setTaskList(\ApiBundle\Entity\TaskList $taskList = null)
+    {
+        $this->task_list = $taskList;
+        return $this;
+    }
     /**
      * Set task_list
      *

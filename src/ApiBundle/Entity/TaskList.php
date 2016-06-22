@@ -3,6 +3,9 @@
 namespace ApiBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as JMS;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * TaskList
@@ -22,22 +25,27 @@ class TaskList
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="User")
-     * @ORM\JoinColumn(name="creator_id", referencedColumnName="id")
+     * @ORM\OneToMany(targetEntity="Task", mappedBy="task_list", cascade={"persist", "remove"})
      */
-    private $creator;
+    private $tasks;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Priority", mappedBy="task_list", cascade={"persist", "remove"})
+     */
+    private $priorities;
 
     /**
      * @var string
      *
      * @ORM\Column(name="name", type="string", length=255)
+     * @Assert\NotBlank()
+     * @Assert\NotNull()
      */
     private $name;
 
-
     /**
      * Get id
-     *
+     * @Groups({"list_data"})
      * @return integer 
      */
     public function getId()
@@ -60,7 +68,7 @@ class TaskList
 
     /**
      * Get name
-     *
+     * @Groups({"list_data"})
      * @return string 
      */
     public function getName()
@@ -69,25 +77,40 @@ class TaskList
     }
 
     /**
-     * Set creator
+     * Add task
      *
-     * @param \ApiBundle\Entity\User $creator
-     * @return TaskList
+     * @param \ApiBundle\Entity\Task $task
      */
-    public function setCreator(\ApiBundle\Entity\User $creator = null)
+    public function addTask(\ApiBundle\Entity\Task $task)
     {
-        $this->creator = $creator;
-
+        $this->tasks[] = $task;
+        $task->setTaskList($this);
         return $this;
     }
 
     /**
-     * Get creator
+     * Remove task
      *
-     * @return \ApiBundle\Entity\User 
+     * @param \ApiBundle\Entity\Task $task
      */
-    public function getCreator()
+    public function removeTask(\ApiBundle\Entity\Task $task)
     {
-        return $this->creator;
+        $this->tasks->removeElement($task);
     }
+     
+    /**
+     * Get tasks
+     * @Groups({"list_data"})
+     * @return Doctrine\Common\Collections\Collection 
+     */
+    public function getTasks()
+    {
+        return $this->tasks;
+    }
+
+    public function __construct()
+    {
+        $this->tasks = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
 }
