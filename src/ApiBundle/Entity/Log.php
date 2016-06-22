@@ -95,6 +95,19 @@ class Log
         return $this;
     }
     /**
+     * Set user
+     *
+     * @param \ApiBundle\Entity\User $user
+     * @return Log
+     */
+    public function setUser(\ApiBundle\Entity\User $user = null)
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
      * Get user
      *
      * @return \ApiBundle\Entity\User 

@@ -83,6 +83,7 @@ fos_rest:
             - { path: '^/', priorities: ['json', 'xml'], fallback_format: json, prefer_extension: true }
             - { path: '^/', priorities: [ 'text/html', '*/*'], fallback_format: html, prefer_extension: true }   
 
+
 fos_user:
     db_driver: orm
     firewall_name: api                                  # Seems to be used when registering user/reseting password,
@@ -99,8 +100,16 @@ fos_oauth_server:
     service:
         user_provider: fos_user.user_manager             # This property will be used when valid credentials are given to load the user upon access token creation
 
+
 doctrine_migrations:
     dir_name: "%kernel.root_dir%/DoctrineMigrations"
     namespace: Application\Migrations
     table_name: migration_versions
     name: Application Migrations
+
+sensio_framework_extra:
+    request:
+        converters: true
+        auto_convert: false
+    view:
+        annotations: false

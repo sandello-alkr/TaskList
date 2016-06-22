@@ -1,3 +1,4 @@
+
 api_user:
     type: rest
     resource: ApiBundle\Controller\UserController

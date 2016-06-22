@@ -22,11 +22,18 @@ security:
             pattern: ^/oauth/v2/token
             security: false
 
+
         reg:
             pattern: ^/api/user/reg
             security: false
 
         auth:
+
+        create:
+            pattern: ^/api/user/create
+            security: false
+
+        client:
             pattern: ^/api/user/client
             security: false
 

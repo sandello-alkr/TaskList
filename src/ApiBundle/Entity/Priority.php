@@ -76,6 +76,19 @@ class Priority
         return $this;
     }
     /**
+     * Set user
+     *
+     * @param \ApiBundle\Entity\User $user
+     * @return Priority
+     */
+    public function setUser(\ApiBundle\Entity\User $user = null)
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
      * Get user
      *
      * @return \ApiBundle\Entity\User 
@@ -95,6 +108,19 @@ class Priority
         $this->task_list = $taskList;
         return $this;
     }
+    /**
+     * Set task_list
+     *
+     * @param \ApiBundle\Entity\TaskList $taskList
+     * @return Priority
+     */
+    public function setTaskList(\ApiBundle\Entity\TaskList $taskList = null)
+    {
+        $this->task_list = $taskList;
+
+        return $this;
+    }
+
     /**
      * Get task_list
      *

@@ -72,6 +72,7 @@ class Groups
     {
         $this->users = new \Doctrine\Common\Collections\ArrayCollection();
     }
+
     /**
      * Set creator
      *
@@ -83,6 +84,7 @@ class Groups
         $this->creator = $creator;
         return $this;
     }
+
     /**
      * Get creator
      *
@@ -92,6 +94,7 @@ class Groups
     {
         return $this->creator;
     }
+
     /**
      * Add users
      *
@@ -103,6 +106,7 @@ class Groups
         $this->users[] = $users;
         return $this;
     }
+
     /**
      * Remove users
      *
@@ -112,6 +116,7 @@ class Groups
     {
         $this->users->removeElement($users);
     }
+
     /**
      * Get users
      *
@@ -121,4 +126,4 @@ class Groups
     {
         return $this->users;
     }
-}
+
