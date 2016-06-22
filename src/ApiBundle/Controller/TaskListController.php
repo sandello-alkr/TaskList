@@ -7,6 +7,15 @@ use FOS\RestBundle\View\View;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
+use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Doctrine\Common\Annotations\AnnotationReader;
 
 use ApiBundle\Entity\TaskList;
 use ApiBundle\Entity\Priority;
@@ -17,21 +26,32 @@ class TaskListController extends FOSRestController
 
     public function getTasklistAction($id)
     {
-        $taskList = $this
-                    ->getDoctrine()
-                    ->getRepository('ApiBundle:TaskList')
-                    ->find($id);
+        try {
+            $taskList = $this
+                        ->getDoctrine()
+                        ->getRepository('ApiBundle:TaskList')
+                        ->find($id);
 
-        if(!$taskList){
-            return new View(
-                "page not found",
-                Response::HTTP_NOT_FOUND);
-            }
-        
-        if($this->checkAccess($taskList)){
-            return $taskList;
+            if(!$taskList){
+                throw new NotFoundHttpException("Page not found.");
+                }
+            
+            if(!$this->checkAccess($taskList)){
+                throw new AccessDeniedException();
+            } 
+            return $this->getSerializer($taskList, array("list_data"));
         } 
-        return "permission denied";
+        catch (NotFoundHttpException $e){
+            return new View(
+                    ["error" => $e->getMessage()],
+                    Response::HTTP_NOT_FOUND);
+        }
+        catch (AccessDeniedException $e){
+            return new View(
+                ["error" => $e->getMessage()],
+                Response::HTTP_FORBIDDEN);
+        }
+        
     }
 
     public function getTasklistsAction()
@@ -43,7 +63,7 @@ class TaskListController extends FOSRestController
             $taskLists[] = $priority->getTaskList();            
         }
 
-        return $taskLists;
+        return $this->getSerializer($taskLists, array("list_data"));
     }
 
     public function postTasklistsAction(Request $request)
@@ -62,42 +82,72 @@ class TaskListController extends FOSRestController
         return new View($taskList, Response::HTTP_CREATED);
     }
 
-    public function putTasklistAction(TaskList $taskList, Request $request)
+    public function putTasklistAction($id, Request $request)
     {
-        $errors = $this->treatAndValidateRequest($taskList, $request);
-        if (count($errors) > 0) {
-            return new View(
-                $errors,
-                Response::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
+        try {
+            $taskList = $this
+                ->getDoctrine()
+                ->getRepository('ApiBundle:TaskList')
+                ->find($id);
+            if(!$taskList){
+                throw new NotFoundHttpException();            
+                }
 
-        if($this->checkAccess($taskList, Priority::CREATOR_PRIORITY)){
+            $errors = $this->treatAndValidateRequest($taskList, $request);
+            if (count($errors) > 0) {
+                return new View(
+                    $errors,
+                    Response::HTTP_UNPROCESSABLE_ENTITY
+                );
+            }
+
+            if(!$this->checkAccess($taskList, Priority::CREATOR_PRIORITY)){
+                throw new AccessDeniedException();
+            }
+
             $this->persistAndFlush($taskList); 
-            return $taskList;  
+            return $this->getSerializer($taskList, array("list_data"));
         }
-        return "permission denied";        
+        catch(NotFoundHttpException $e){
+            return new View(
+                ["error" => "Page not found."],
+                Response::HTTP_NOT_FOUND);
+        }
+        catch(AccessDeniedException $e){
+            return new View(
+                ["error" => $e->getMessage()],
+                Response::HTTP_FORBIDDEN);
+        }        
     }
 
     public function deleteTasklistAction($id)
     {
-        //while without delete cascade
-        $taskList = $this
-            ->getDoctrine()
-            ->getRepository('ApiBundle:TaskList')
-            ->find($id);
-        if(!$taskList){
-            return new View(
-                "page not found",
-                Response::HTTP_NOT_FOUND);
+        try {
+            $taskList = $this
+                ->getDoctrine()
+                ->getRepository('ApiBundle:TaskList')
+                ->find($id);
+            if(!$taskList){
+                throw new NotFoundHttpException();            
+                }
+            if(!$this->checkAccess($taskList, Priority::CREATOR_PRIORITY)){
+                throw new AccessDeniedException();    
             }
-        if($this->checkAccess($taskList, Priority::CREATOR_PRIORITY)){
             $em = $this->getDoctrine()->getManager();
             $em->remove($taskList);
             $em->flush();
             return;
         }
-        return "permission denied";
+        catch(NotFoundHttpException $e){
+            return new View(
+                ["error" => "Page not found."],
+                Response::HTTP_NOT_FOUND);
+        }
+        catch(AccessDeniedException $e){
+            return new View(
+                ["error" => $e->getMessage()],
+                Response::HTTP_FORBIDDEN);
+        }
     }
 
     private function treatAndValidateRequest(TaskList $taskList, Request $request)
@@ -142,11 +192,19 @@ class TaskListController extends FOSRestController
         $priority = new Priority();
         $priority->setUser($this->get('security.context')->getToken()->getUser());
         $priority->setTaskList($taskList);
-        $priority->setPriority(1);
+        $priority->setPriority(Priority::CREATOR_PRIORITY);
         $manager = $this->getDoctrine()->getManager();
         $manager->persist($priority);
         $manager->flush();
         return;
+    }
+
+    private function getSerializer($tasklists, array $groups)
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
+        $normalizer = new ObjectNormalizer($classMetadataFactory);
+        $serializer = new Serializer(array($normalizer));
+        return $serializer->normalize($tasklists, null, array('groups' => $groups));
     }
 
 }

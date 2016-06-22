@@ -5,6 +5,7 @@ namespace ApiBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as JMS;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * TaskList
@@ -29,6 +30,11 @@ class TaskList
     private $tasks;
 
     /**
+     * @ORM\OneToMany(targetEntity="Priority", mappedBy="task_list", cascade={"persist", "remove"})
+     */
+    private $priorities;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="name", type="string", length=255)
@@ -39,7 +45,7 @@ class TaskList
 
     /**
      * Get id
-     *
+     * @Groups({"list_data"})
      * @return integer 
      */
     public function getId()
@@ -62,7 +68,7 @@ class TaskList
 
     /**
      * Get name
-     *
+     * @Groups({"list_data"})
      * @return string 
      */
     public function getName()
@@ -94,7 +100,7 @@ class TaskList
      
     /**
      * Get tasks
-     *
+     * @Groups({"list_data"})
      * @return Doctrine\Common\Collections\Collection 
      */
     public function getTasks()

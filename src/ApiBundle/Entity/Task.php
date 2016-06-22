@@ -1,6 +1,7 @@
 <?php
 namespace ApiBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * Task
  *
@@ -42,7 +43,7 @@ class Task
     private $status;
     /**
      * Get id
-     *
+     * @Groups({"list_data"})
      * @return integer 
      */
     public function getId()
@@ -51,7 +52,7 @@ class Task
     }
     /**
      * Set name
-     *
+     * 
      * @param string $name
      * @return Task
      */
@@ -62,7 +63,7 @@ class Task
     }
     /**
      * Get name
-     *
+     * @Groups({"list_data"})
      * @return string 
      */
     public function getName()
@@ -82,7 +83,7 @@ class Task
     }
     /**
      * Get description
-     *
+     * @Groups({"list_data"})
      * @return string 
      */
     public function getDescription()
@@ -91,7 +92,7 @@ class Task
     }
     /**
      * Set status
-     *
+     * 
      * @param string $status
      * @return Task
      */
@@ -102,7 +103,7 @@ class Task
     }
     /**
      * Get status
-     *
+     * @Groups({"list_data"})
      * @return string 
      */
     public function getStatus()
