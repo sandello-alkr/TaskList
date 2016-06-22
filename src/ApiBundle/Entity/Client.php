@@ -10,6 +10,8 @@ namespace ApiBundle\Entity;
 
 use FOS\OAuthServerBundle\Entity\Client as BaseClient;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use FOS\OAuthServerBundle\Util\Random;
 
 /**
  * @ORM\Table("oauth2_clients")
@@ -24,8 +26,63 @@ class Client extends BaseClient
      */
     protected $id;
 
+    /**
+     * @var string
+     */
+    protected $randomId;
+
+    /**
+     * @var string
+     */
+    protected $secret;
+
+    /**
+     * @var array
+     */
+    protected $allowedGrantTypes = array();
+
     public function __construct()
     {
         parent::__construct();
+    }
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRandomId()
+    {
+        return $this->randomId;
+    }
+
+    /**
+     * @Groups({"client_data"})
+     * {@inheritdoc}
+     */
+    public function getPublicId()
+    {
+        return sprintf('%s_%s', $this->getId(), $this->getRandomId());
+    }
+
+    /**
+     * @Groups({"client_data"})
+     * {@inheritdoc}
+     */
+    public function getSecret()
+    {
+        return $this->secret;
+    }
+
+    /**
+     * @Groups({"client_data"})
+     * {@inheritdoc}
+     */
+    public function getAllowedGrantTypes()
+    {
+        return $this->allowedGrantTypes;
     }
 }

@@ -129,11 +129,24 @@ class Task
     }
 
     /**
+     * Set task_list
+     *
+     * @param \ApiBundle\Entity\TaskList $taskList
+     * @return Task
+     */
+    public function setTaskList(\ApiBundle\Entity\TaskList $taskList = null)
+    {
+        $this->task_list = $taskList;
+
+        return $this;
+    }
+
+    /**
      * Get task_list
      *
-     * @return integer
+     * @return \ApiBundle\Entity\TaskList 
      */
-    public function getTaskListId()
+    public function getTaskList()
     {
         return $this->task_list;
     }

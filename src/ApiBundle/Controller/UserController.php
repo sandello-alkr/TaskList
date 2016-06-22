@@ -2,139 +2,248 @@
 
 namespace ApiBundle\Controller;
 
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use ApiBundle\Entity\Client;
+use FOS\RestBundle\Controller\FOSRestController;
+use FOS\RestBundle\View\View;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
+use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
+use Doctrine\Common\Annotations\AnnotationReader;
+use Nelmio\ApiDocBundle\Annotation\ApiDoc;
+
 use ApiBundle\Entity\User;
 use ApiBundle\Form\UserType;
 
 /**
  * User controller.
- *
- * @Route("/user")
+ * @Route("/api/user")
  */
-class UserController extends Controller
+class UserController extends FOSRestController
 {
     /**
-     * Lists all User entities.
-     *
-     * @Route("/", name="user_index")
-     * @Method("GET")
+     * User registration.
+     * @Route("/create", name="user_create")
+     * @Method("POST")
+     * @ApiDoc(
+     *  description="Create a new User",
+     *  section="User",
+     *  statusCodes = {
+     *     Response::HTTP_CREATED = "Returned when user created",
+     *     Response::HTTP_BAD_REQUEST = "Returned when the form has errors",
+     *     Response::HTTP_CONFLICT = "Returned when user with the same username or email exists"
+     *   },
+     *  input={
+     *      "class"="ApiBundle\Form\UserType",
+     *  }
+     * )
      */
-    public function indexAction()
-    {
-        $em = $this->getDoctrine()->getManager();
-
-        $users = $em->getRepository('ApiBundle:User')->findAll();
-
-        return $this->render('user/index.html.twig', array(
-            'users' => $users,
-        ));
-    }
-
-    /**
-     * Creates a new User entity.
-     *
-     * @Route("/new", name="user_new")
-     * @Method({"GET", "POST"})
-     */
-    public function newAction(Request $request)
+    public function postCreateAction(Request $request)
     {
         $user = new User();
-        $form = $this->createForm('ApiBundle\Form\UserType', $user);
-        $form->handleRequest($request);
+        $errors = $this->treatAndValidateRequest($user, $request);
+        if (count($errors) > 0)
+            return new View(
+                $errors,
+                Response::HTTP_BAD_REQUEST
+            );
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($user);
-            $em->flush();
+        $userManager = $this->get("fos_user.user_manager");
+        $user->setEnabled(true);
+        $user->setRoles(['ROLE_USER']);
 
-            return $this->redirectToRoute('user_show', array('id' => $user->getId()));
+        try {
+            $userManager->updateUser($user);
+
+            return View::create(
+                ["message" => "user created"],
+                Response::HTTP_CREATED
+            );
+        } catch(\Exception $e){
+            return View::create(
+                ["error" => "user with the same username or email exists"],
+                Response::HTTP_CONFLICT
+            );
         }
-
-        return $this->render('user/new.html.twig', array(
-            'user' => $user,
-            'form' => $form->createView(),
-        ));
     }
 
     /**
-     * Finds and displays a User entity.
-     *
-     * @Route("/{id}", name="user_show")
+     * Users get.
+     * @Route("/all", name="user_all")
+     * @Method("GET")
+     * @ApiDoc(
+     *  description="Get All Users",
+     *  section="User",
+     *  statusCodes = {
+     *     Response::HTTP_OK = "Returned when users received",
+     *   },
+     *  output={
+     *      "class"="ApiBundle\Entity\User",
+     *  }
+     * )
+     */
+    public function getUsersAction()
+    {
+        $users = $this
+            ->getDoctrine()
+            ->getRepository('ApiBundle:User')
+            ->findAll();
+
+        return View::create(
+            $this->getSerializer($users, array("user_data")),
+            Response::HTTP_OK
+        );
+    }
+
+    /**
+     * Current user get.
+     * @Route("/view", name="user_view")
+     * @Method("GET")
+     * @ApiDoc(
+     *  description="Get current User",
+     *  section="User",
+     *  statusCodes = {
+     *     Response::HTTP_OK = "Returned when current user received",
+     *   },
+     *  output={
+     *      "class"="ApiBundle\Entity\User",
+     *  }
+     * )
+     */
+    public function getCurrentUserAction()
+    {
+        return View::create(
+            $this->getSerializer($this->getUser(), array("user_data")),
+            Response::HTTP_OK
+        );
+    }
+
+    /*
+     * Client get.
+     * @Route("/client", name="user_client")
      * @Method("GET")
      */
-    public function showAction(User $user)
+    /*public function getClientAction()
     {
-        $deleteForm = $this->createDeleteForm($user);
+        $clientManager = $this->get('fos_oauth_server.client_manager.default');
+        $client = $clientManager->createClient();
+        $client->setAllowedGrantTypes(['password', 'refresh_token']);
+        $clientManager->updateClient($client);
 
-        return $this->render('user/show.html.twig', array(
-            'user' => $user,
-            'delete_form' => $deleteForm->createView(),
-        ));
+        return View::create(
+            $this->getSerializer($client, array("client_data")),
+            Response::HTTP_OK
+        );
+    }*/
+
+    /**
+     * User get.
+     * @Route("/{id}", name="user_get")
+     * @Method("GET")
+     * @ParamConverter("user", class="ApiBundle:User", options = {"mapping" : {"id" : "id"}})
+     * @ApiDoc(
+     *  description="Get user on id",
+     *  section="User",
+     *  statusCodes = {
+     *     Response::HTTP_OK = "Returned when user received on id",
+     *   },
+     *  output={
+     *      "class"="ApiBundle\Entity\User",
+     *  }
+     * )
+     */
+    public function getUserAction(User $user)
+    {
+        return View::create(
+            $this->getSerializer($user, array("user_data")),
+            Response::HTTP_OK
+        );
     }
 
     /**
-     * Displays a form to edit an existing User entity.
+     * User edit.
+     * @Route("/edit", name="user_edit")
+     * @Method("POST")
+     * @ApiDoc(
+     *  description="Edit Current User",
+     *  section="User",
+     *  statusCodes = {
+     *     Response::HTTP_OK = "Returned when user updated",
+     *     Response::HTTP_BAD_REQUEST = "Returned when the form has errors",
+     *     Response::HTTP_CONFLICT = "Returned when user with the same username or email exists"
+     *   },
+     *  input={
+     *      "class"="ApiBundle\Form\UserType",
+     *  }
+     * )
      *
-     * @Route("/{id}/edit", name="user_edit")
-     * @Method({"GET", "POST"})
      */
-    public function editAction(Request $request, User $user)
+    public function postUserAction(Request $request)
     {
-        $deleteForm = $this->createDeleteForm($user);
-        $editForm = $this->createForm('ApiBundle\Form\UserType', $user);
-        $editForm->handleRequest($request);
+        $user = $this->getUser();
+        $errors = $this->treatAndValidateRequest($user, $request);
+        if (count($errors) > 0)
+            return new View(
+                $errors,
+                Response::HTTP_BAD_REQUEST
+            );
 
-        if ($editForm->isSubmitted() && $editForm->isValid()) {
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($user);
-            $em->flush();
+        $encode_password = $this
+            ->get('security.encoder_factory')
+            ->getEncoder($user)
+            ->encodePassword($user->getPlainPassword(), $user->getSalt());
 
-            return $this->redirectToRoute('user_edit', array('id' => $user->getId()));
+        if (strcmp($encode_password, $user->getPassword()) != 0)
+            return View::create(
+                ["error" => "incorrect password"],
+                Response::HTTP_CONFLICT
+            );
+
+        $userManager = $this->get("fos_user.user_manager");
+
+        try {
+            $userManager->updateUser($user);
+
+            return View::create(
+                ["message" => "user updated"],
+                Response::HTTP_OK
+            );
+        } catch(\Exception $e){
+            return View::create(
+                ["error" => "user with the same username or email exists"],
+                Response::HTTP_CONFLICT
+            );
         }
-
-        return $this->render('user/edit.html.twig', array(
-            'user' => $user,
-            'edit_form' => $editForm->createView(),
-            'delete_form' => $deleteForm->createView(),
-        ));
     }
 
-    /**
-     * Deletes a User entity.
-     *
-     * @Route("/{id}", name="user_delete")
-     * @Method("DELETE")
-     */
-    public function deleteAction(Request $request, User $user)
+    private function getSerializer($users, array $groups)
     {
-        $form = $this->createDeleteForm($user);
+        $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
+        $normalizer = new ObjectNormalizer($classMetadataFactory);
+        $serializer = new Serializer(array($normalizer));
+
+        return $serializer->normalize($users, null, array('groups' => $groups));
+    }
+
+    private function treatAndValidateRequest(User $user, Request $request)
+    {
+        $form = $this->createForm(
+            new UserType(),
+            $user,
+            [
+                'method' => $request->getMethod()
+            ]
+        );
+
         $form->handleRequest($request);
+        $errors = $this->get('validator')->validate($user);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
-            $em->remove($user);
-            $em->flush();
-        }
-
-        return $this->redirectToRoute('user_index');
-    }
-
-    /**
-     * Creates a form to delete a User entity.
-     *
-     * @param User $user The User entity
-     *
-     * @return \Symfony\Component\Form\Form The form
-     */
-    private function createDeleteForm(User $user)
-    {
-        return $this->createFormBuilder()
-            ->setAction($this->generateUrl('user_delete', array('id' => $user->getId())))
-            ->setMethod('DELETE')
-            ->getForm()
-        ;
+        return $errors;
     }
 }

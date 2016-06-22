@@ -9,19 +9,14 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 
-class UserType extends AbstractType
+class UserEditType extends AbstractType
 {
-    /**
-     * {@inheritdoc}
-     */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        //added all field for edit
         $builder
-            ->add('username')
-            ->add('plainPassword', 'password')
-            ->add('email', 'email');
+            ->add('plain_password');
     }
 
     /**

@@ -22,6 +22,14 @@ security:
             pattern: ^/oauth/v2/token
             security: false
 
+        create:
+            pattern: ^/api/user/create
+            security: false
+
+        client:
+            pattern: ^/api/user/client
+            security: false
+
         api:
             pattern: ^/                                # All URLs are protected
             fos_oauth: true                            # OAuth2 protected resource
