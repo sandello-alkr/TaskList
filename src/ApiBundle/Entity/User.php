@@ -10,7 +10,7 @@ namespace ApiBundle\Entity;
 
 use FOS\UserBundle\Entity\User as BaseUser;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups as UserGroups;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
@@ -47,7 +47,6 @@ class User extends BaseUser
      * @var string
      *
      * @Assert\Email()
-     * @Assert\NotBlank
      */
     protected $email;
 
@@ -63,15 +62,9 @@ class User extends BaseUser
      */
     protected $plainPassword;
 
-    public function __construct()
-    {
-        parent::__construct();
-        $this->priorities = new \Doctrine\Common\Collections\ArrayCollection();
-    }
-
     /**
      * Get id
-     * @UserGroups({"user_data"})
+     * @Groups({"user_data"})
      * @return integer
      */
     public function getId()
@@ -94,8 +87,13 @@ class User extends BaseUser
         return $this->priorities;
     }
 
+    public function __construct()
+    {
+        $this->priorities = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
     /**
-     * @UserGroups({"user_data"})
+     * @Groups({"user_data"})
      */
     public function getUsername()
     {
@@ -103,7 +101,7 @@ class User extends BaseUser
     }
 
     /**
-     * @UserGroups({"user_data"})
+     * @Groups({"user_data"})
      */
     public function getEmail()
     {
