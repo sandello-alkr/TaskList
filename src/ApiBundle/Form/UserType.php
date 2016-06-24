@@ -23,8 +23,7 @@ class UserType extends AbstractType
             ->add('plainPassword', 'password')
             ->add('email', 'email');
     }
-
->>>>>>> origin/master
+    
     /**
      * @param OptionsResolverInterface $resolver
      */
@@ -43,8 +42,6 @@ class UserType extends AbstractType
      */
     public function getName()
     {
-        // this is important in order to be able
-        // to provide the entity directly in the json
         return '';
     }
 }
