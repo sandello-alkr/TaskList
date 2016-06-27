@@ -121,18 +121,6 @@ class Task
         $this->task_list = $taskList;
         return $this;
     }
-    /**
-     * Set task_list
-     *
-     * @param \ApiBundle\Entity\TaskList $taskList
-     * @return Task
-     */
-    public function setTaskList(\ApiBundle\Entity\TaskList $taskList = null)
-    {
-        $this->task_list = $taskList;
-
-        return $this;
-    }
 
     /**
      * Get task_list
