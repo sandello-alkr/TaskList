@@ -297,3 +297,161 @@ Code  | Text  | Description
                  "username" : "username",
                  "email" : "email"
             }
+
+##TaskList [/tasklists]
+
+###Get all tasklists [GET /tasklists] 
+
++ Request
+
+    + Headers
+
+            Authorization: "Bearer access token"
+            Content-Type: "application/json"
+
++ Response 200
+
+        [
+          {
+            "id": {id},
+            "name": {name}
+            "tasks": {tasks[]}
+          },
+        ]
+
+###Get tasklist by id [GET /tasklists/{id}]
+
++ Request
+
+    + Headers
+
+            Authorization: "Bearer access token"
+            Content-Type: "application/json"
+
++ Response 200
+
+        {
+          "id": {id},
+          "name": {name}
+          "tasks":{tasks[]}
+        }
+
++ Response 404
+
+        {
+          "error": "Page not found."
+        }
+
++ Response 403
+
+        {
+          "error": "Access denied."
+        }
+
+### Create new tasklist [POST /tasklists]
+
++ Request
+
+    + Headers
+
+            Authorization: "Bearer access token"
+            Content-Type: "application/json"
+
+    + Body 
+
+            {
+                "name": {name},
+            } 
+
++ Response 201
+
+        {
+          "id": {id},
+          "name": {name}
+        } 
+
++ Response 422
+
+        [
+          {
+            "property_path": "name",
+            "message": "This value should not be blank."
+          },
+          {
+            "property_path": "name",
+            "message": "This value should not be null."
+          }
+        ]
+
+
+###Update tasklist [PUT /tasklists/{id}]
+
++ Request
+
+    + Headers
+
+            Authorization: "Bearer access token"
+            Content-Type: "application/json"
+
+    + Body
+
+            {
+              "name": {name}
+            } 
+
++ Response 200
+
+        {
+          "id": {id},
+          "name": {name},
+          "tasks": {tasks[]},
+        } 
+
++ Response 404
+
+        {
+          "error": "Page not found."
+        }
+
++ Response 403
+
+        {
+          "error": "Access denied."
+        }
+
++ Response 422
+
+        [
+          {
+            "property_path": "name",
+            "message": "This value should not be blank."
+          },
+          {
+            "property_path": "name",
+            "message": "This value should not be null."
+          }
+        ]
+
+### Delete tasklist [DELETE /tasklists/{id}]
+
++ Request
+
+    + Headers
+
+            Authorization: "Bearer access token"
+            Content-Type: "application/json"
+
++ Response 204
+
++ Response 404
+
+        {
+          "error": "Page not found."
+        }
+
++ Response 403
+
+        {
+          "error": "Access denied."
+        }
+        
