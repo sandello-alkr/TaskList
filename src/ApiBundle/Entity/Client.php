@@ -10,7 +10,7 @@ namespace ApiBundle\Entity;
 
 use FOS\OAuthServerBundle\Entity\Client as BaseClient;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Groups as UserGroups;
 use FOS\OAuthServerBundle\Util\Random;
 
 /**
@@ -60,7 +60,7 @@ class Client extends BaseClient
     }
 
     /**
-     * @Groups({"client_data"})
+     * @UserGroups({"client_data"})
      * {@inheritdoc}
      */
     public function getPublicId()
@@ -69,7 +69,7 @@ class Client extends BaseClient
     }
 
     /**
-     * @Groups({"client_data"})
+     * @UserGroups({"client_data"})
      * {@inheritdoc}
      */
     public function getSecret()
@@ -78,7 +78,7 @@ class Client extends BaseClient
     }
 
     /**
-     * @Groups({"client_data"})
+     * @UserGroups({"client_data"})
      * {@inheritdoc}
      */
     public function getAllowedGrantTypes()
