@@ -1,7 +1,13 @@
 <?php
+
 namespace ApiBundle\Entity;
+
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
+use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use Symfony\Component\Serializer\Annotation\Groups as UserGroups;
+
 /**
  * Task
  *
@@ -18,58 +24,70 @@ class Task
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
+
     /**
      * @ORM\ManyToOne(targetEntity="TaskList")
      * @ORM\JoinColumn(name="task_list_id", referencedColumnName="id")
      */
     private $task_list;
+
     /**
      * @var string
      *
      * @ORM\Column(name="name", type="string", length=255)
+     * @Assert\NotBlank
      */
     private $name;
+
     /**
      * @var string
      *
      * @ORM\Column(name="description", type="string", length=255)
+     * @Assert\NotBlank
      */
     private $description;
+
     /**
      * @var bool
      *
      * @ORM\Column(name="status", type="boolean")
+     * @Assert\NotBlank
      */
     private $status;
+
+
     /**
      * Get id
-     * @UserGroups({"list_data"})
      * @return integer 
      */
     public function getId()
     {
         return $this->id;
     }
+
     /**
      * Set name
-     * 
+     *
      * @param string $name
      * @return Task
      */
     public function setName($name)
     {
         $this->name = $name;
+
         return $this;
     }
+
     /**
      * Get name
-     * @UserGroups({"list_data"})
+     *
      * @return string 
      */
     public function getName()
     {
         return $this->name;
     }
+
     /**
      * Set description
      *
@@ -79,37 +97,43 @@ class Task
     public function setDescription($description)
     {
         $this->description = $description;
+
         return $this;
     }
+
     /**
      * Get description
-     * @UserGroups({"list_data"})
+     *
      * @return string 
      */
     public function getDescription()
     {
         return $this->description;
     }
+
     /**
      * Set status
-     * 
+     *
      * @param string $status
      * @return Task
      */
     public function setStatus($status)
     {
         $this->status = $status;
+
         return $this;
     }
+
     /**
      * Get status
-     * @UserGroups({"list_data"})
+     *
      * @return string 
      */
     public function getStatus()
     {
         return $this->status;
     }
+
     /**
      * Set task_list
      *
@@ -119,6 +143,7 @@ class Task
     public function setTaskList(\ApiBundle\Entity\TaskList $taskList = null)
     {
         $this->task_list = $taskList;
+
         return $this;
     }
 
