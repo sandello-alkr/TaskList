@@ -274,7 +274,7 @@ Code  | Text  | Description
                  "email" : "email"
             }]
 
-#### User get by {id} [GET /api/user/{id}]
+### User get by {id} [GET /api/user/{id}]
 
 + Request
 
